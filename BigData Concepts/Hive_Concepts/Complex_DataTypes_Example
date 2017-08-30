@@ -15,7 +15,7 @@ hive> CREATE TABLE employeedata(empid int, ename string, skillset array<string>,
 OK
 Time taken: 15.285 seconds
 
-CREATE A FILE 'COMPLEXDATA.txt' IN HOME PATH AND PUT i.e., Three RECORDS as below
+CREATE A FILE 'COMPLEXDATA.txt' IN HOME PATH AND PUT THREE RECORDS as below
 ---------------------------------------------------------------------------------
 empid	ename	skillset					phone							address
 -----	-----	--------					-----							-------
