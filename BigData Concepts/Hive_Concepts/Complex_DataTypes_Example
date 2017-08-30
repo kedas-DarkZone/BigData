@@ -1,0 +1,93 @@
+COMPLEX DATATYPES IN HIVE
+--------------------------
+--> Array  - Array elements can be accessed through index value
+--> Map    - Map elements can be accessed through KEY value
+--> Struct - Struct elements can be accessed through '.'
+
+CREATE 'EMPLOYEEDATA' table in hive which includes complex datatypes
+--------------------------------------------------------------------
+
+hive> CREATE TABLE employeedata(empid int, ename string, skillset array<string>, phone map<string,string>, address struct<street:string,city:string,pin:string>)
+    > ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+    > COLLECTION ITEMS TERMINATED BY ','
+    > MAP KEYS TERMINATED BY ':'
+    > LINES TERMINATED BY '\n';
+OK
+Time taken: 15.285 seconds
+
+CREATE A FILE 'COMPLEXDATA.txt' IN HOME PATH AND PUT i.e., Three RECORDS as below
+---------------------------------------------------------------------------------
+empid	ename	skillset					phone							address
+-----	-----	--------					-----							-------
+1001	sai		hadoop,java,sql,spark		PC:8327456136,OC:8327350236		6416 vineland,orlando,32819	
+1002	ritesh	c#,html,css					PC:9808333818,OC:9802060718		4604 cason cove,orlando,32811
+1003	shu		hive,sqoop,pig			    PC:8327456137,OC:8327350237		16100 greater houston,houston,77058
+
+LOAD DATA INTO 'EMPLOYEEDATA' TABLE FROM 'COMPLEXDATA.txt' FILE IN HOME PATH
+----------------------------------------------------------------------------
+hive> load data local inpath '/home/cloudera/complexdata.txt' into table employeedata;
+Loading data to table default.employeedata
+Table default.employeedata stats: [numFiles=1, totalSize=258]
+OK
+Time taken: 3.61 seconds
+
+DISPLAY THE RECORDS IN TABLE AND CHECK IF EVERYTHING IS CORRECT
+---------------------------------------------------------------
+hive> select * from employeedata;
+OK
+1001	sai		["hadoop","java","sql","spark"]		{"PC":"8327456136","OC":"8327350236"}	{"street":"6416 vineland","city":"orlando","pin":"32819"}
+1002	ritesh	["c#","html","css"]					{"PC":"9808333818","OC":"9802060718"}	{"street":"4604 cason cove","city":"orlando","pin":"32811"}
+1003	shu		["hive","sqoop","pig"]				{"PC":"8327456137","OC":"8327350237"}	{"street":"16100 greater houston","city":"houston","pin":"77058"}
+Time taken: 0.243 seconds, Fetched: 3 row(s)
+
+ACCESSING ARRAY DATATYPE ITEM FROM THE TABLE
+--------------------------------------------
+hive> select skillset[0] from employeedata;
+OK
+hadoop
+c#
+hive
+Time taken: 0.813 seconds, Fetched: 3 row(s)
+
+
+hive> select skillset[1] from employeedata;
+OK
+java
+html
+sqoop
+Time taken: 0.377 seconds, Fetched: 3 row(s)
+
+
+ACCESSING MAP DATATYPE ITEM FROM THE TABLE
+------------------------------------------
+hive> select phone['PC'] from employeedata;
+OK
+8327456136
+9808333818
+8327456137
+Time taken: 0.319 seconds, Fetched: 3 row(s)
+
+
+hive> select phone['OC'] from employeedata;
+OK
+8327350236
+9802060718
+8327350237
+Time taken: 0.283 seconds, Fetched: 3 row(s)
+
+ACCESSING STRUCT DATATYPE ITEM FROM THE TABLE
+---------------------------------------------
+hive> select address.street from employeedata;
+OK
+6416 vineland
+4604 cason cove
+16100 greater houston
+Time taken: 0.286 seconds, Fetched: 3 row(s)
+
+
+hive> select address.pin from employeedata;
+OK
+32819
+32811
+77058
+Time taken: 0.197 seconds, Fetched: 3 row(s)
