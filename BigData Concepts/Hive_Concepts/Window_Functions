@@ -140,10 +140,8 @@ OK
  --------------------------
 Time taken: 43.45 seconds, Fetched: 5 row(s)
 
-
 In our UseCase if we bother abouth 2nd highest salary record details then we go for DENSE_RANK() function
 ----------------------------------------------------------------------------------------------------------
-
 hive> SELECT name, gender, salary, DENSE_RANK() OVER(ORDER BY salary DESC) AS dense_rank FROM EMPLOYEES;
 Query ID = cloudera_20170830164141_83a36919-3f74-43fe-828b-33b3b301cbca
 Total jobs = 1
@@ -240,7 +238,6 @@ Time taken: 51.134 seconds, Fetched: 5 row(s)
 
 Row Number is reset to 1 where the partition changes
 -----------------------------------------------------
-
 hive> SELECT id,name, gender, salary, ROW_NUMBER() OVER(PARTITION BY gender ORDER BY salary DESC) AS rank FROM EMPLOYEES;
 Query ID = cloudera_20170830170202_6c6fa1e3-9e29-48aa-a0ea-284a420df36f
 Total jobs = 1
