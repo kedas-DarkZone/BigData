@@ -1,0 +1,32 @@
+To better understand how partitioning and bucketing works, please take a look at how data is stored in hive. Let's say you have a table
+
+CREATE TABLE employees
+ ( 
+         emp_id INT, 
+         name   STRING,
+         age    INT,
+         gender STRING
+ ) 
+PARTITIONED BY (year STRING, month STRING, day STRING) 
+CLUSTERED BY (emp_id) INTO 250 BUCKETS;
+
+
+Insert some data into a partition for 2016-01-01 & 2016-02-01. Hive will then store data in a directory hierarchy as below:
+--------------------------------------------------------------------------------------------------------------
+
+/user/hive/warehouse/employees/y=2016/m=01/d=01
+/user/hive/warehouse/employees/y=2016/m=02/d=01
+
+(So, when we query using where clause then instead of navigating all records the enginer(tez or mr) looks up for particular directory and fetch you the results)
+
+--> When choosing a PARTITION column make sure the field has less cardinality
+--> Cardinality refers to  "NUMBER OF POSSIBLE VALUES A FIELD CAN OCCUR"
+--> Eg: There are approximately 300 countries in the world but timestamp changes for every milli second. Thus in our context we can partition country but not timestamp.
+--> Partitoning high cardinality filed can result in creation of many directories thus resulting burden on Name Node (metadata)
+--> Partitioning creates DIRECTORIES whereas Bucketing creates FILES(fixed number of files)
+--> Hive will calculate hash value of the fields by passing through hash function (MOD function) and assign record to particular slot in a bucket.
+--> Bucketing is good for high cardinality fields and partitioning is good for less cardinality fields. 
+--> if we use e.g. 250 buckets and the field you're bucketing on has a low cardinality (for instance, it's a US state, so can be only 50 different values) 
+    we will have 50 buckets with data, and 200 buckets with no data.
+--> If we are joining two tables on the same emp_id, hive can do the join bucket by bucket (even better if they're already sorted by emp_id since it's going to do a mergesort which works in linear time).
+
