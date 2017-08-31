@@ -59,8 +59,8 @@ DISPLAY RECORDS IN 'EMPLOYEES' TABLE
 -------------------------------------
 hive> select * from employees;
 OK
-1	sai		26	male	6000
-2	shu		25	male	6000
+1	sai	26	male	6000
+2	shu	25	male	6000
 3	ritesh	24	male	5800
 4	puji	23	female	5000
 5	sravani	28	female	5000
@@ -95,8 +95,8 @@ MapReduce Jobs Launched:
 Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 20.99 sec   HDFS Read: 8604 HDFS Write: 92 SUCCESS
 Total MapReduce CPU Time Spent: 20 seconds 990 msec
 OK
-shu		male	6000	1
-sai		male	6000	1
+shu	male	6000	1
+sai	male	6000	1
 ritesh	male	5800	3
 sravani	Female	5000	4
 puji	Female	5000	4
@@ -130,12 +130,12 @@ Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 5.41 sec   HDFS Read: 8574 HD
 Total MapReduce CPU Time Spent: 5 seconds 410 msec
 OK
  --------------------------
-|sravani	Female	5000 1 |
+|sravani    Female	5000 1 |
 |puji	    Female	5000 1 |
  --------------------------
  --------------------------
-|shu		male	6000 1 |
-|sai		male	6000 1 |
+|shu	    male	6000 1 |
+|sai	    male	6000 1 |
 |ritesh	    male	5800 3 |
  --------------------------
 Time taken: 43.45 seconds, Fetched: 5 row(s)
@@ -167,8 +167,8 @@ MapReduce Jobs Launched:
 Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 7.45 sec   HDFS Read: 8653 HDFS Write: 92 SUCCESS
 Total MapReduce CPU Time Spent: 7 seconds 450 msec
 OK
-shu		male	6000	1
-sai		male	6000	1
+shu	male	6000	1
+sai	male	6000	1
 ritesh	male	5800	2
 sravani	Female	5000	3
 puji	Female	5000	3
@@ -201,8 +201,8 @@ Total MapReduce CPU Time Spent: 6 seconds 100 msec
 OK
 sravani	Female	5000	1
 puji	Female	5000	1
-shu		male	6000	1
-sai		male	6000	1
+shu	male	6000	1
+sai	male	6000	1
 ritesh	male	5800	2
 Time taken: 42.556 seconds, Fetched: 5 row(s)
 
@@ -233,8 +233,8 @@ Total MapReduce CPU Time Spent: 5 seconds 250 msec
 OK
 5	sravani	Female	5000	1	1
 4	puji	Female	5000	1	1
-2	shu		male	6000	1	1
-1	sai		male	6000	1	1
+2	shu	male	6000	1	1
+1	sai	male	6000	1	1
 3	ritesh	male	5800	3	2
 Time taken: 51.134 seconds, Fetched: 5 row(s)
 
@@ -266,8 +266,8 @@ Total MapReduce CPU Time Spent: 3 seconds 700 msec
 OK
 5	sravani	Female	5000	1
 4	puji	Female	5000	2
-2	shu		male	6000	1
-1	sai		male	6000	2
+2	shu	male	6000	1
+1	sai	male	6000	2
 3	ritesh	male	5800	3
 Time taken: 34.266 seconds, Fetched: 5 row(s)
 
