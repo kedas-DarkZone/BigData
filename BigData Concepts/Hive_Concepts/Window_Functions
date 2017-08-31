@@ -1,0 +1,273 @@
+Here we shall discuss about three important window functions
+------------------------------------------------------------
+--> RANK() - (RANK function skips ranking when there is a tie)
+--> DENSE_RANK() - (When there is a tie and if we bother 2nd highest then we choose DENSE_RANK function)
+--> ROW_NUMBER - (when the data is partitioned the row_number is reset to 1 where the partition changes)
+
+	THESE FUNCTION WERE INTRODUCED IN SQLSERVER 2005.
+	ORDER BY CLAUSE IS MANDATORY
+	PARTITON BY CLAUSE IS OPTIONAL
+
+In Order to explain above functions lets create a table in hive as below
+------------------------------------------------------------------------
+hive> show create table employees;
+OK
+CREATE TABLE `employees`(
+  `id` int, 
+  `name` string, 
+  `age` int, 
+  `gender` string, 
+  `salary` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://quickstart.cloudera:8020/user/hive/warehouse/employees'
+TBLPROPERTIES (
+  'COLUMN_STATS_ACCURATE'='true', 
+  'numFiles'='2', 
+  'numRows'='5', 
+  'rawDataSize'='102', 
+  'totalSize'='107', 
+  'transient_lastDdlTime'='1504055077')
+Time taken: 2.901 seconds, Fetched: 21 row(s)
+
+INSERT MULTIPLE RECORDS INTO 'EMPLOYEES' TABLE
+----------------------------------------------
+hive> INSERT INTO TABLE employees 
+    > select inline(array
+    >        (   struct (1,'sai',26,'male',6000),
+    >            struct (2,'shu',25,'male',6000),
+    >            struct (3,'ritesh',24,'male',5800),
+    >            struct (4,'puji',23,'Female',5000),
+    >            struct (5,'sravani',28,'Female',5000)));
+Query ID = cloudera_20170830155858_28b16fbc-606d-48ae-ba26-538af17e4a56
+Total jobs = 3
+Launching Job 1 out of 3
+Number of reduce tasks is set to 0 since there's no reduce operator
+.
+.
+.
+.
+.
+
+
+DISPLAY RECORDS IN 'EMPLOYEES' TABLE
+-------------------------------------
+hive> select * from employees;
+OK
+1	sai		26	male	6000
+2	shu		25	male	6000
+3	ritesh	24	male	5800
+4	puji	23	female	5000
+5	sravani	28	female	5000
+Time taken: 2.22 seconds, Fetched: 5 row(s)
+
+
+We have 2 records with the highest salary in tie. If you wish to display all records with 1st highest salary then we use RANK function.
+If we carefully observe the output below we cannot see the 2nd highest salary record instead we can see 3rd highest salary record. Thus,
+RANK() function leaves holes after the tie records.
+--------------------------------------------------------------------------------------------------------------------------------------
+
+hive> SELECT name, gender, salary, RANK() OVER(ORDER BY salary DESC) AS rank FROM EMPLOYEES;
+Query ID = cloudera_20170830162525_ecea0995-da96-4745-ae67-ef806b911871
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks not specified. Estimated from input data size: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1504109750155_0003, Tracking URL = http://quickstart.cloudera:8088/proxy/application_1504109750155_0003/
+Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_1504109750155_0003
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2017-08-30 16:25:56,904 Stage-1 map = 0%,  reduce = 0%
+2017-08-30 16:26:39,092 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 18.49 sec
+2017-08-30 16:26:53,307 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 20.99 sec
+MapReduce Total cumulative CPU time: 20 seconds 990 msec
+Ended Job = job_1504109750155_0003
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 20.99 sec   HDFS Read: 8604 HDFS Write: 92 SUCCESS
+Total MapReduce CPU Time Spent: 20 seconds 990 msec
+OK
+shu		male	6000	1
+sai		male	6000	1
+ritesh	male	5800	3
+sravani	Female	5000	4
+puji	Female	5000	4
+Time taken: 74.021 seconds, Fetched: 5 row(s)
+
+
+If we PARTITION BY 'gender' for the above query then RANK() function is applied to female and male partitions seperatly. Thus we have highest salary
+records with respect to male and female category.
+----------------------------------------------------------------------------------------------------------------------------------------------------
+hive> SELECT name, gender, salary, RANK() OVER(PARTITION BY gender ORDER BY salary DESC) AS rank FROM EMPLOYEES;
+Query ID = cloudera_20170830163535_5401314f-4d2e-4f5e-901b-5c3a72418c9d
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks not specified. Estimated from input data size: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1504109750155_0004, Tracking URL = http://quickstart.cloudera:8088/proxy/application_1504109750155_0004/
+Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_1504109750155_0004
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2017-08-30 16:35:31,636 Stage-1 map = 0%,  reduce = 0%
+2017-08-30 16:35:44,301 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 2.91 sec
+2017-08-30 16:35:59,326 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 5.41 sec
+MapReduce Total cumulative CPU time: 5 seconds 410 msec
+Ended Job = job_1504109750155_0004
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 5.41 sec   HDFS Read: 8574 HDFS Write: 92 SUCCESS
+Total MapReduce CPU Time Spent: 5 seconds 410 msec
+OK
+ --------------------------
+|sravani	Female	5000 1 |
+|puji	    Female	5000 1 |
+ --------------------------
+ --------------------------
+|shu		male	6000 1 |
+|sai		male	6000 1 |
+|ritesh	    male	5800 3 |
+ --------------------------
+Time taken: 43.45 seconds, Fetched: 5 row(s)
+
+
+In our UseCase if we bother abouth 2nd highest salary record details then we go for DENSE_RANK() function
+----------------------------------------------------------------------------------------------------------
+
+hive> SELECT name, gender, salary, DENSE_RANK() OVER(ORDER BY salary DESC) AS dense_rank FROM EMPLOYEES;
+Query ID = cloudera_20170830164141_83a36919-3f74-43fe-828b-33b3b301cbca
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks not specified. Estimated from input data size: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1504109750155_0005, Tracking URL = http://quickstart.cloudera:8088/proxy/application_1504109750155_0005/
+Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_1504109750155_0005
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2017-08-30 16:41:26,384 Stage-1 map = 0%,  reduce = 0%
+2017-08-30 16:41:39,264 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 4.54 sec
+2017-08-30 16:41:54,786 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 7.45 sec
+MapReduce Total cumulative CPU time: 7 seconds 450 msec
+Ended Job = job_1504109750155_0005
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 7.45 sec   HDFS Read: 8653 HDFS Write: 92 SUCCESS
+Total MapReduce CPU Time Spent: 7 seconds 450 msec
+OK
+shu		male	6000	1
+sai		male	6000	1
+ritesh	male	5800	2
+sravani	Female	5000	3
+puji	Female	5000	3
+Time taken: 44.047 seconds, Fetched: 5 row(s)
+
+DENSE_RANK() FUNCTION APPLIED TO PARTITION COLUMN 'GENDER'
+----------------------------------------------------------
+hive> SELECT name, gender, salary, DENSE_RANK() OVER(PARTITION BY gender ORDER BY salary DESC) AS dense_rank FROM EMPLOYEES;
+Query ID = cloudera_20170830164848_5ff6ec6e-146d-42ca-9d40-1100f6643ad6
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks not specified. Estimated from input data size: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1504109750155_0006, Tracking URL = http://quickstart.cloudera:8088/proxy/application_1504109750155_0006/
+Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_1504109750155_0006
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2017-08-30 16:49:07,196 Stage-1 map = 0%,  reduce = 0%
+2017-08-30 16:49:19,453 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 3.22 sec
+2017-08-30 16:49:35,912 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 6.1 sec
+MapReduce Total cumulative CPU time: 6 seconds 100 msec
+Ended Job = job_1504109750155_0006
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 6.1 sec   HDFS Read: 8603 HDFS Write: 92 SUCCESS
+Total MapReduce CPU Time Spent: 6 seconds 100 msec
+OK
+sravani	Female	5000	1
+puji	Female	5000	1
+shu		male	6000	1
+sai		male	6000	1
+ritesh	male	5800	2
+Time taken: 42.556 seconds, Fetched: 5 row(s)
+
+Inorder to observe the difference between RANK() and DENSE_RANK() FUNCTIONS
+---------------------------------------------------------------------------
+hive> SELECT id,name, gender, salary, RANK() OVER(PARTITION BY gender ORDER BY salary DESC) AS rank, DENSE_RANK() OVER(PARTITION BY gender ORDER BY salary DESC) AS dense_rank  FROM EMPLOYEES;
+Query ID = cloudera_20170830165353_ec30a053-c76a-45f3-9c04-8669e94f787a
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks not specified. Estimated from input data size: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1504109750155_0007, Tracking URL = http://quickstart.cloudera:8088/proxy/application_1504109750155_0007/
+Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_1504109750155_0007
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2017-08-30 16:53:33,458 Stage-1 map = 0%,  reduce = 0%
+2017-08-30 16:53:49,501 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 2.32 sec
+2017-08-30 16:54:10,195 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 5.25 sec
+MapReduce Total cumulative CPU time: 5 seconds 250 msec
+Ended Job = job_1504109750155_0007
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 5.25 sec   HDFS Read: 9417 HDFS Write: 112 SUCCESS
+Total MapReduce CPU Time Spent: 5 seconds 250 msec
+OK
+5	sravani	Female	5000	1	1
+4	puji	Female	5000	1	1
+2	shu		male	6000	1	1
+1	sai		male	6000	1	1
+3	ritesh	male	5800	3	2
+Time taken: 51.134 seconds, Fetched: 5 row(s)
+
+Row Number is reset to 1 where the partition changes
+-----------------------------------------------------
+
+hive> SELECT id,name, gender, salary, ROW_NUMBER() OVER(PARTITION BY gender ORDER BY salary DESC) AS rank FROM EMPLOYEES;
+Query ID = cloudera_20170830170202_6c6fa1e3-9e29-48aa-a0ea-284a420df36f
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks not specified. Estimated from input data size: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1504109750155_0008, Tracking URL = http://quickstart.cloudera:8088/proxy/application_1504109750155_0008/
+Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_1504109750155_0008
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2017-08-30 17:03:07,707 Stage-1 map = 0%,  reduce = 0%
+2017-08-30 17:03:17,582 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 1.48 sec
+2017-08-30 17:03:28,606 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 3.7 sec
+MapReduce Total cumulative CPU time: 3 seconds 700 msec
+Ended Job = job_1504109750155_0008
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 3.7 sec   HDFS Read: 8568 HDFS Write: 102 SUCCESS
+Total MapReduce CPU Time Spent: 3 seconds 700 msec
+OK
+5	sravani	Female	5000	1
+4	puji	Female	5000	2
+2	shu		male	6000	1
+1	sai		male	6000	2
+3	ritesh	male	5800	3
+Time taken: 34.266 seconds, Fetched: 5 row(s)
+
