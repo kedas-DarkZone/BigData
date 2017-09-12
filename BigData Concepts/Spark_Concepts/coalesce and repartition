@@ -1,0 +1,63 @@
+spark-shell --packages com.databricks:spark-csv_2.10:1.4.0
+
+scala> val df = sqlContext.read.format("com.databricks.spark.csv").option("header", "true").option("inferSchema", "true").load("C:/Users/saikumar/Desktop/ddata.csv")
+df: org.apache.spark.sql.DataFrame = [id: int, first_name: string, last_name: string, email: string, gender: string]
+
+scala> df.printSchema()
+root
+ |-- id: integer (nullable = true)
+ |-- first_name: string (nullable = true)
+ |-- last_name: string (nullable = true)
+ |-- email: string (nullable = true)
+ |-- gender: string (nullable = true)
+
+
+scala> df.take(5)
+res1: Array[org.apache.spark.sql.Row] = Array([1,Ernestus,Ovid,eovid0@studiopress.com,Male], [2,Boot,Lincey,blincey1@furl.net,Male], [3,Ashly,Elms,aelms2@wiley.com,Female], [4,Carlye,Monteith,cmonteith3@virginia.edu,Female], [5,Hestia,Corrett,hcorrett4@biblegateway.com,Female])
+
+
+// input file with 1000 records is saved into two partitions in and rdd
+scala> df.rdd.partitions.size
+res2: Int = 2
+
+// saving the above dataframe to disk in csv format results in two part files - each with 500 records including header
+df.write.format("com.databricks.spark.csv").option("header","true").save("C:/Users/saikumar/Desktop/repartition/df")
+
+COALESCE:
+--------
+//coalesce algorithm is used to decrease partitions in rdd. If we try to increase partitions than actual then it fails
+// Below trying to increase partitions with coalesce to 3 but actual size is two partitions only 
+scala> val coalesce_df = df.coalesce(3)
+coalesce_df: org.apache.spark.sql.DataFrame = [id: int, first_name: string, last_name: string, email: string, gender: string]
+
+scala> coalesce_df.rdd.partitions.size
+res5: Int = 2
+
+
+//reduce rdd partitions to 1 from 2 using coalesce
+scala> val coalesce_df = df.coalesce(1)
+coalesce_df: org.apache.spark.sql.DataFrame = [id: int, first_name: string, last_name: string, email: string, gender: string]
+
+scala> coalesce_df.rdd.partitions.size
+res6: Int = 1
+
+// only one part file is stored at the dick path
+scala> coalesce_df.write.format("com.databricks.spark.csv").option("header","true").save("C:/Users/saikumar/Desktop/repartition/coalescedf")
+
+
+REPARTITION:
+-----------
+//repartition algorithm is used to either increase or decrease the partitions in rdd. Thus much shuffling happens.
+scala> val repartition_df = df.repartition(10)
+repartition_df: org.apache.spark.sql.DataFrame = [id: int, first_name: string, last_name: string, email: string, gender: string]
+
+scala> repartition_df.rdd.partitions.size
+res11: Int = 10
+
+scala> repartition_df.write.format("com.databricks.spark.csv").option("header","true").save("C:/Users/saikumar/Desktop/repartition/repartitiondf")
+
+
+Differences between coalesce and repartition:
+--------------------------------------------
+The repartition algorithm does a full shuffle of the data and creates equal sized partitions of data. coalesce combines existing partitions to avoid a full shuffle.
+
