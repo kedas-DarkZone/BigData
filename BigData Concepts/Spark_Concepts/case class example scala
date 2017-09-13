@@ -1,0 +1,104 @@
+create rdd by reading from csv file with no schema
+-------------------------------------------------
+
+scala> val data = sc.textFile("C:/Users/saikumar/Desktop/ddata.csv")
+data: org.apache.spark.rdd.RDD[String] = C:/Users/saikumar/Desktop/ddata.csv MapPartitionsRDD[14] at textFile at <console>:33
+
+scala> data.take(4).foreach(println)
+1,Ernestus,Ovid,eovid0@studiopress.com,Male
+2,Boot,Lincey,blincey1@furl.net,Male
+3,Ashly,Elms,aelms2@wiley.com,Female
+4,Carlye,Monteith,cmonteith3@virginia.edu,Female
+
+create a case class "Data" with field names and datatypes
+---------------------------------------------------------
+
+scala> case class Data(id: Int, first_name: String, last_name: String, email: String, gender: String)
+defined class Data
+
+Trim each record inorder to remove spaces at the start & end of each record
+-----------------------------------------------------------------------------
+
+scala> val data1 = data.map(rec => rec.split(",").map(_.trim))
+data1: org.apache.spark.rdd.RDD[Array[String]] = MapPartitionsRDD[15] at map at <console>:35
+
+scala> data1.take(4).foreach(println)
+[Ljava.lang.String;@3da18ccf
+[Ljava.lang.String;@6ccd6981
+[Ljava.lang.String;@28e64ca0
+[Ljava.lang.String;@683b19d5
+
+Match the input dataset with case class defined earlier and convert to DataFrame
+--------------------------------------------------------------------------------
+
+scala> val data2 = data1.map{case Array(s0, s1, s2, s3, s4) => Data(s0.toInt, s1, s2, s3, s4)}.toDF()
+data2: org.apache.spark.sql.DataFrame = [id: int, first_name: string, last_name: string, email: string, gender: string]
+
+scala> data2.take(4).foreach(println)
+[1,Ernestus,Ovid,eovid0@studiopress.com,Male]
+[2,Boot,Lincey,blincey1@furl.net,Male]
+[3,Ashly,Elms,aelms2@wiley.com,Female]
+[4,Carlye,Monteith,cmonteith3@virginia.edu,Female]
+
+scala> data2.show
++---+----------+---------+--------------------+------+
+| id|first_name|last_name|               email|gender|
++---+----------+---------+--------------------+------+
+|  1|  Ernestus|     Ovid|eovid0@studiopres...|  Male|
+|  2|      Boot|   Lincey|   blincey1@furl.net|  Male|
+|  3|     Ashly|     Elms|    aelms2@wiley.com|Female|
+|  4|    Carlye| Monteith|cmonteith3@virgin...|Female|
+|  5|    Hestia|  Corrett|hcorrett4@biblega...|Female|
+|  6|     Boote|  Germain|bgermain5@bloglov...|  Male|
+|  7|      Dody|   Ackers|    dackers6@umn.edu|Female|
+|  8|    Shayne|    Close|   sclose7@state.gov|  Male|
+|  9|    Roxane| Swatland| rswatland8@ning.com|Female|
+| 10|     Mozes| Spurryer|mspurryer9@twitte...|  Male|
+| 11|   Xymenes|Callister|xcallistera@insta...|  Male|
+| 12|     Nissa|  Quarton|nquartonb@joomla.org|Female|
+| 13|       Irv|    Temby|    itembyc@ebay.com|  Male|
+| 14|Petronille|  Gyngyll|pgyngylld@apache.org|Female|
+| 15|    Jerrie|  Kirrens|jkirrense@marriot...|Female|
+| 16|   Arlinda|   Calton|acaltonf@dropbox.com|Female|
+| 17|     Layla|   Benech|  lbenechg@jimdo.com|Female|
+| 18|    Clarie|   Minall|cminallh@shutterf...|Female|
+| 19|     Fritz|  Handley|fhandleyi@state.t...|  Male|
+| 20|  Nikolaos|  Gredden|ngreddenj@dion.ne.jp|  Male|
++---+----------+---------+--------------------+------+
+only showing top 20 rows
+
+verify the schema of the created dataframe
+-------------------------------------------
+
+scala> data2.printSchema()
+root
+ |-- id: integer (nullable = false)
+ |-- first_name: string (nullable = true)
+ |-- last_name: string (nullable = true)
+ |-- email: string (nullable = true)
+ |-- gender: string (nullable = true)
+
+
+import sqlContext implicits inorder to use specific functions (register temp table)
+-----------------------------------------------------------------------------------
+
+scala> import sqlContext.implicits._
+import sqlContext.implicits._
+
+scala> data2.registerTempTable("df")
+
+scala> sqlContext.sql("select * from df limit 10").show
++---+----------+---------+--------------------+------+
+| id|first_name|last_name|               email|gender|
++---+----------+---------+--------------------+------+
+|  1|  Ernestus|     Ovid|eovid0@studiopres...|  Male|
+|  2|      Boot|   Lincey|   blincey1@furl.net|  Male|
+|  3|     Ashly|     Elms|    aelms2@wiley.com|Female|
+|  4|    Carlye| Monteith|cmonteith3@virgin...|Female|
+|  5|    Hestia|  Corrett|hcorrett4@biblega...|Female|
+|  6|     Boote|  Germain|bgermain5@bloglov...|  Male|
+|  7|      Dody|   Ackers|    dackers6@umn.edu|Female|
+|  8|    Shayne|    Close|   sclose7@state.gov|  Male|
+|  9|    Roxane| Swatland| rswatland8@ning.com|Female|
+| 10|     Mozes| Spurryer|mspurryer9@twitte...|  Male|
++---+----------+---------+--------------------+------+
