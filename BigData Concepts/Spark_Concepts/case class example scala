@@ -102,3 +102,13 @@ scala> sqlContext.sql("select * from df limit 10").show
 |  9|    Roxane| Swatland| rswatland8@ning.com|Female|
 | 10|     Mozes| Spurryer|mspurryer9@twitte...|  Male|
 +---+----------+---------+--------------------+------+
+
+
+
+scala> sqlContext.sql("select gender, count(1) count_of_gender from df group by gender").show
++------+---------------+
+|gender|count_of_gender|
++------+---------------+
+|Female|            526|
+|  Male|            474|
++------+---------------+
