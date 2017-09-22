@@ -1,0 +1,118 @@
+//Case Class
+---------------------
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+case class Order(
+orderId: Int,
+orderDate: String,
+orderCustomerId: Int,
+orderStatus: String
+)
+
+// Exiting paste mode, now interpreting.
+
+defined class Order
+
+
+//create an List "os" of type Order as below: 
+-------------------------------------------------
+
+val os = List(
+Order(1,"2017-01-01",100,"COMPLETE"),
+Order(2,"2017-01-01",20,"CLOSED"),
+Order(3,"2017-01-01",301,"PENDING"),
+Order(4,"2017-01-01",202,"CLOSED"),
+Order(5,"2017-01-01",3013,"COMPLETE"),
+Order(6,"2017-01-01",203,"PENDING"),
+Order(7,"2017-01-01",3014,"COMPLETE"),
+Order(8,"2017-01-01",20,"NEW"),
+Order(9,"2017-01-01",301,"PENDING"),
+Order(10,"2017-01-01",2,"CLOSED"),
+Order(11,"2017-01-01",1,"COMPLETE"),
+Order(12,"2017-01-01",3,"NEW"),
+Order(13,"2017-01-01",30,"COMPLETE")
+)
+
+//replace "-" in orderDate field using map transformation
+----------------------------------------------------------
+
+scala> os.map(x => x.orderDate.replace("-","").toInt).foreach(println)
+20170101
+20170101
+20170101
+20170101
+20170101
+20170101
+20170101
+20170101
+20170101
+20170101
+20170101
+20170101
+20170101
+
+//sort the data based on orderCustomerId
+----------------------------------------
+scala> os.sortBy(x => x.orderCustomerId)
+res18: List[Order] = List(Order(11,2017-01-01,1,COMPLETE), Order(10,2017-01-01,2,CLOSED), Order(12,2017-01-01,3,NEW), Order(2,2017-01-01,20,CLOSED), Order(8,2017-01-01,20,NEW), Order(13,2017-01-01,30,COMPLETE), Order(1,2017-01-01,100,COMPLETE), Order(4,2017-01-01,202,CLOSED), Order(6,2017-01-01,203,PENDING), Order(3,2017-01-01,301,PENDING), Order(9,2017-01-01,301,PENDING), Order(5,2017-01-01,3013,COMPLETE), Order(7,2017-01-01,3014,COMPLETE))
+
+
+//group by orderStatus
+----------------------
+scala> os.groupBy(x => x.orderStatus).map(x => (x._1,x._2)).foreach(println)
+(NEW,List(Order(8,2017-01-01,20,NEW), Order(12,2017-01-01,3,NEW)))
+(PENDING,List(Order(3,2017-01-01,301,PENDING), Order(6,2017-01-01,203,PENDING), Order(9,2017-01-01,301,PENDING)))
+(COMPLETE,List(Order(1,2017-01-01,100,COMPLETE), Order(5,2017-01-01,3013,COMPLETE), Order(7,2017-01-01,3014,COMPLETE), Order(11,2017-01-01,1,COMPLETE), Order(13,2017-01-01,30,COMPLETE)))
+(CLOSED,List(Order(2,2017-01-01,20,CLOSED), Order(4,2017-01-01,202,CLOSED), Order(10,2017-01-01,2,CLOSED)))
+
+scala> os.groupBy(x => x.orderStatus).map(x => (x._1,x._2.size)).foreach(println)
+(NEW,2)
+(PENDING,3)
+(COMPLETE,5)
+(CLOSED,3)
+
+//create a List of tuples(Heterogenous elements)
+-------------------------------------------------
+scala> val t = List((1,Set(Order(1,"2017-01-01",100,"COMPLETE"),
+     | Order(2,"2017-01-01",20,"CLOSED"),
+     | Order(3,"2017-01-01",301,"PENDING"),
+     | Order(4,"2017-01-01",202,"CLOSED"),
+     | Order(5,"2017-01-01",3013,"COMPLETE"),
+     | Order(6,"2017-01-01",203,"PENDING"),
+     | Order(7,"2017-01-01",3014,"COMPLETE"),
+     | Order(8,"2017-01-01",20,"NEW"),
+     | Order(9,"2017-01-01",301,"PENDING"),
+     | Order(10,"2017-01-01",2,"CLOSED"),
+     | Order(11,"2017-01-01",1,"COMPLETE"),
+     | Order(12,"2017-01-01",3,"NEW"),
+     | Order(13,"2017-01-01",30,"COMPLETE"))),(2,Set(Order(1,"2017-01-01",100,"COMPLETE"),
+     | Order(2,"2017-01-01",20,"CLOSED"),
+     | Order(3,"2017-01-01",301,"PENDING"),
+     | Order(4,"2017-01-01",202,"CLOSED"),
+     | Order(5,"2017-01-01",3013,"COMPLETE"),
+     | Order(6,"2017-01-01",203,"PENDING"),
+     | Order(7,"2017-01-01",3014,"COMPLETE"),
+     | Order(8,"2017-01-01",20,"NEW"),
+     | Order(9,"2017-01-01",301,"PENDING"),
+     | Order(10,"2017-01-01",2,"CLOSED"),
+     | Order(11,"2017-01-01",1,"COMPLETE"),
+     | Order(12,"2017-01-01",3,"NEW"),
+     | Order(13,"2017-01-01",30,"COMPLETE"))))
+t: List[(Int, scala.collection.immutable.Set[Order])] = List((1,Set(Order(11,2017-01-01,1,COMPLETE), Order(6,2017-01-01,203,PENDING), Order(7,2017-01-01,3014,COMPLETE), Order(8,2017-01-01,20,NEW), Order(10,2017-01-01,2,CLOSED), Order(13,2017-01-01,30,COMPLETE), Order(5,2017-01-01,3013,COMPLETE), Order(3,2017-01-01,301,PENDING), Order(12,2017-01-01,3,NEW), Order(1,2017-01-01,100,COMPLETE), Order(4,2017-01-01,202,CLOSED), Order(2,2017-01-01,20,CLOSED), Order(9,2017-01-01,301,PENDING))), (2,Set(Order(11,2017-01-01,1,COMPLETE), Order(6,2017-01-01,203,PENDING), Order(7,2017-01-01,3014,COMPLETE), Order(8,2017-01-01,20,NEW), Order(10,2017-01-01,2,CLOSED), Order(13,2017-01-01,30,COMPLETE), Order(5,2017-01-01,3013,COMPLETE), Order(3,2017-01-01,301,PENDING), Order(12,2017-01-01,3,NEW), Order(1,20...
+
+//Dispaly all tuples with minimum orderId
+----------------------------------------
+
+scala> t.map(a => (a._1, a._2.minBy(Order => Order.orderId)))
+res23: List[(Int, Order)] = List((1,Order(1,2017-01-01,100,COMPLETE)), (2,Order(1,2017-01-01,100,COMPLETE)))
+
+//we can flatten the list by using flatmap
+------------------------------------------
+scala> t.flatMap(x => x._2.filter(order => order.orderStatus == "PENDING")).foreach(println)
+Order(6,2017-01-01,203,PENDING)
+Order(3,2017-01-01,301,PENDING)
+Order(9,2017-01-01,301,PENDING)
+Order(6,2017-01-01,203,PENDING)
+Order(3,2017-01-01,301,PENDING)
+Order(9,2017-01-01,301,PENDING)
