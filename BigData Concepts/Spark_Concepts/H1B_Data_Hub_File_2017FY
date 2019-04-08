@@ -1,0 +1,155 @@
+## import H1B data hub file for Fiscal Year 2017 to a DataFrame.
+scala> val H1B2017FY = spark.read.option("header","true").option("inferSchema","true").csv("C:/Users/saikumar/Desktop/Data_Hub_Files/h1b_datahubexport-2017.csv").toDF("Fiscal Year","Employer","Initial Approvals","Initial Denials","Continuing Approvals","Continuing Denials","NAICS","Tax ID","State","City","ZIP")
+H1B2017FY: org.apache.spark.sql.DataFrame = [Fiscal Year: int, Employer: string ... 9 more fields]
+
+## Printing Schema of the imported file
+scala> H1B2017FY.printSchema
+root
+ |-- Fiscal Year: integer (nullable = true)
+ |-- Employer: string (nullable = true)
+ |-- Initial Approvals: string (nullable = true)
+ |-- Initial Denials: integer (nullable = true)
+ |-- Continuing Approvals: string (nullable = true)
+ |-- Continuing Denials: integer (nullable = true)
+ |-- NAICS: integer (nullable = true)
+ |-- Tax ID: integer (nullable = true)
+ |-- State: string (nullable = true)
+ |-- City: string (nullable = true)
+ |-- ZIP: integer (nullable = true)
+ 
+## Removing Spaces in the column names of the imported files and replcing them with '_'
+scala> var H1B2017FY_final = H1B2017FY
+H1B2017FY_final: org.apache.spark.sql.DataFrame = [Fiscal Year: int, Employer: string ... 9 more fields]
+
+scala> for(col <- H1B2017FY.columns){
+     | H1B2017FY_final = H1B2017FY_final.withColumnRenamed(col,col.replaceAll("\\s", "_"))
+     | }
+
+scala> H1B2017FY_final.printSchema
+root
+ |-- Fiscal_Year: integer (nullable = true)
+ |-- Employer: string (nullable = true)
+ |-- Initial_Approvals: string (nullable = true)
+ |-- Initial_Denials: integer (nullable = true)
+ |-- Continuing_Approvals: string (nullable = true)
+ |-- Continuing_Denials: integer (nullable = true)
+ |-- NAICS: integer (nullable = true)
+ |-- Tax_ID: integer (nullable = true)
+ |-- State: string (nullable = true)
+ |-- City: string (nullable = true)
+ |-- ZIP: integer (nullable = true)
+
+## Creating a Temporary view on top of DataFrame to add table nature to the DataFrame
+H1B2017FY_final.createOrReplaceTempView("H1B2017FY_final")
+
+## Sample data from 2017 filescala> spark.sql("select * from H1B2017FY_final").show(10, false)
++-----------+----------------------------------+-----------------+---------------+--------------------+------------------+-----+------+-----+-------------+-----+
+|Fiscal_Year|Employer                          |Initial_Approvals|Initial_Denials|Continuing_Approvals|Continuing_Denials|NAICS|Tax_ID|State|City         |ZIP  |
++-----------+----------------------------------+-----------------+---------------+--------------------+------------------+-----+------+-----+-------------+-----+
+|2017       |TOOLCARE US INTERNATIONAL LLC     |1                |0              |0                   |0                 |81   |null  |AL   |AUBURN       |36832|
+|2017       |NORTHEAST ARKANSAS CMTY MENTAL    |0                |0              |1                   |0                 |62   |null  |AR   |JONESBORO    |72401|
+|2017       |THE BELPORT CO INC                |1                |0              |0                   |0                 |33   |null  |CA   |CAMARILLO    |93012|
+|2017       |INST OF QUANTITATIVE SYS PHARMACOL|2                |0              |0                   |0                 |54   |null  |CA   |CARLSBAD     |92008|
+|2017       |A PLUS ADULT DAY HEALTH CARE      |1                |0              |0                   |0                 |62   |null  |CA   |EL MONTE     |91731|
+|2017       |8MINUTENERGY RENEWABLES LLC       |0                |0              |1                   |0                 |22   |null  |CA   |FOLSOM       |95630|
+|2017       |BIZNESS APPS INC                  |1                |0              |0                   |0                 |54   |null  |CA   |LA JOLLA     |92037|
+|2017       |SI GOURMET INC                    |0                |1              |0                   |0                 |31   |null  |CA   |LOS ANGELES  |90066|
+|2017       |GLOBAL EAGLE SOFTWARE INC         |1                |0              |0                   |0                 |54   |null  |CA   |MILPITAS     |95035|
+|2017       |BIRCHSTREET SYSTEMS INC           |1                |0              |0                   |0                 |51   |null  |CA   |NEWPORT BEACH|92660|
++-----------+----------------------------------+-----------------+---------------+--------------------+------------------+-----+------+-----+-------------+-----+
+only showing top 10 rows
+
+## Ranking given based on total count of Employers in each state who filed H1B for the Fiscal_Year 2017
+## Based on the below results, we could see some tie's
+scala> spark.sql("select State, count(*) as Employer_Count, RANK() OVER(ORDER BY count(*) DESC) as RANK from H1B2017FY_final group by State").show(60,false)
+2019-04-08 14:22:59 WARN  WindowExec:66 - No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
++-----+--------------+----+
+|State|Employer_Count|RANK|
++-----+--------------+----+
+|CA   |9755          |1   |
+|NY   |5782          |2   |
+|TX   |4803          |3   |
+|NJ   |3199          |4   |
+|IL   |2428          |5   |
+|MA   |2295          |6   |
+|FL   |2186          |7   |
+|VA   |1741          |8   |
+|MI   |1676          |9   |
+|PA   |1569          |10  |
+|GA   |1529          |11  |
+|WA   |998           |12  |
+|MD   |996           |13  |
+|OH   |982           |14  |
+|NC   |901           |15  |
+|MN   |633           |16  |
+|CT   |633           |16  |
+|MO   |579           |18  |
+|AZ   |554           |19  |
+|DC   |540           |20  |
+|CO   |519           |21  |
+|WI   |454           |22  |
+|IN   |438           |23  |
+|TN   |403           |24  |
+|SC   |287           |25  |
+|KS   |286           |26  |
+|OR   |267           |27  |
+|UT   |267           |27  |
+|LA   |246           |29  |
+|KY   |232           |30  |
+|OK   |227           |31  |
+|AL   |226           |32  |
+|IA   |215           |33  |
+|NE   |185           |34  |
+|DE   |180           |35  |
+|NV   |164           |36  |
+|AR   |158           |37  |
+|NH   |142           |38  |
+|NM   |129           |39  |
+|RI   |106           |40  |
+|MS   |103           |41  |
+|GU   |100           |42  |
+|HI   |79            |43  |
+|ME   |78            |44  |
+|WV   |73            |45  |
+|ND   |69            |46  |
+|MP   |68            |47  |
+|ID   |61            |48  |
+|VT   |50            |49  |
+|SD   |45            |50  |
+|PR   |42            |51  |
+|AK   |35            |52  |
+|MT   |24            |53  |
+|WY   |18            |54  |
+|VI   |18            |54  |
+|null |12            |56  |
+|FM   |1             |57  |
++-----+--------------+----+
+
+## Raking of Top 20 Cities In California based on the Employer Count.
+scala> spark.sql("select City, count(*) as Employer_Count, RANK() OVER(ORDER BY count(*) DESC) as RANK from H1B2017FY_final where State='CA' group by City").show(20,false)
+2019-04-08 14:39:36 WARN  WindowExec:66 - No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
++----------------+--------------+----+
+|City            |Employer_Count|RANK|
++----------------+--------------+----+
+|SAN FRANCISCO   |1411          |1   |
+|LOS ANGELES     |662           |2   |
+|SAN JOSE        |584           |3   |
+|SANTA CLARA     |415           |4   |
+|FREMONT         |336           |5   |
+|SAN DIEGO       |336           |5   |
+|IRVINE          |314           |7   |
+|PALO ALTO       |248           |8   |
+|SUNNYVALE       |233           |9   |
+|MOUNTAIN VIEW   |185           |10  |
+|REDWOOD CITY    |169           |11  |
+|SAN MATEO       |168           |12  |
+|MILPITAS        |129           |13  |
+|PLEASANTON      |128           |14  |
+|OAKLAND         |107           |15  |
+|CITY OF INDUSTRY|105           |16  |
+|SANTA MONICA    |98            |17  |
+|MENLO PARK      |88            |18  |
+|SAN RAMON       |84            |19  |
+|TORRANCE        |83            |20  |
++----------------+--------------+----+
+
