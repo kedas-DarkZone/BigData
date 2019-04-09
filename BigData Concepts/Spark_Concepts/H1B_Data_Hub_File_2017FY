@@ -153,3 +153,123 @@ scala> spark.sql("select City, count(*) as Employer_Count, RANK() OVER(ORDER BY 
 |TORRANCE        |83            |20  |
 +----------------+--------------+----+
 
+## Definitions
+Initial_Approvals   : The I.A. stands for Initial Approval and data under this column is the total approvals count for H1B petitions filed as “New Employment” or “New Concurrent Employment“.
+
+Initial_Denials     : The I.D. stands for Initial Denial and data under this column is the total denials count for H1B petitions filed as “New Employment” or “New Concurrent Employment“.
+
+Continuing_Approvals: The C.A. stands for Continuing Approval and data under this column is the total approvals count for H1B petitions NOT filed as “New Employment” or “New Concurrent Employment“.	(Example: Amendments, Transfers, etc)
+
+Continuing_Denials  : The C.D. stands for Continuing Denial and data under this column is the total denials count for H1B petitions filed NOT filed as “New Employment” or “New Concurrent Employment“. (Example: Amendments, Transfers, etc)
+
+
+## Employer with the highest Initial_Approval rate in descending order. (Top 20)
+scala> spark.sql("select Fiscal_Year, Employer, sum(CAST(REPLACE(Initial_Approvals,',','') AS INT)) as Initial_Aprovals from H1B2017FY_final group by 1,2 order by Initial_A
+provals DESC").show(false)
++-----------+----------------------------+----------------+
+|Fiscal_Year|Employer                    |Initial_Aprovals|
++-----------+----------------------------+----------------+
+|2017       |COGNIZANT TECH SOLNS US CORP|3212            |
+|2017       |TATA CONSULTANCY SVCS LTD   |2312            |
+|2017       |AMAZON CORPORATE LLC        |2274            |
+|2017       |TECH MAHINDRA AMERICAS INC  |2221            |
+|2017       |MICROSOFT CORPORATION       |1474            |
+|2017       |GOOGLE INC                  |1216            |
+|2017       |INFOSYS LTD                 |1179            |
+|2017       |WIPRO LIMITED               |1071            |
+|2017       |INTEL CORPORATION           |1066            |
+|2017       |IBM INDIA PRIVATE LIMITED   |957             |
+|2017       |ACCENTURE LLP               |955             |
+|2017       |HCL AMERICA INC             |874             |
+|2017       |FACEBOOK INC                |728             |
+|2017       |APPLE INC                   |675             |
+|2017       |SYNTEL CONSULTING INC       |618             |
+|2017       |DELOITTE CONSULTING LLP     |612             |
+|2017       |CAPGEMINI AMERICA INC       |523             |
+|2017       |CISCO SYSTEMS INC           |483             |
+|2017       |ERNST & YOUNG US LLP        |479             |
+|2017       |ORACLE AMERICA INC          |410             |
++-----------+----------------------------+----------------+
+
+
+##Employer with the highest Initial_Denials rate in descending order. (Top 20)
+scala> spark.sql("select Fiscal_Year, Employer, sum(CAST(REPLACE(Initial_Denials,',','') AS INT)) as Initial_Denials from H1B2017FY_final group by 1,2 order by Initial_Denials DESC").show(false)
++-----------+----------------------------+---------------+
+|Fiscal_Year|Employer                    |Initial_Denials|
++-----------+----------------------------+---------------+
+|2017       |COGNIZANT TECH SOLNS US CORP|406            |
+|2017       |TATA CONSULTANCY SVCS LTD   |215            |
+|2017       |TECH MAHINDRA AMERICAS INC  |210            |
+|2017       |IBM INDIA PRIVATE LIMITED   |185            |
+|2017       |INFOSYS LTD                 |159            |
+|2017       |CAPGEMINI AMERICA INC       |134            |
+|2017       |ACCENTURE LLP               |109            |
+|2017       |ZS ASSOCIATES INC           |97             |
+|2017       |ACCENZ LLC                  |95             |
+|2017       |EXPERIS US INC              |82             |
+|2017       |WIPRO LIMITED               |80             |
+|2017       |DELOITTE CONSULTING LLP     |77             |
+|2017       |SYNTEL CONSULTING INC       |66             |
+|2017       |EDVENSWA TECH LLC           |63             |
+|2017       |VARNAR INC                  |61             |
+|2017       |IPOLARITY LLC               |60             |
+|2017       |T2M CONSULTING SERVICES INC |55             |
+|2017       |LORSHI SYSTEMS LLC          |54             |
+|2017       |SMART SOURCE USA LLC        |51             |
+|2017       |AZIMETRY INC                |50             |
++-----------+----------------------------+---------------+
+
+##Employer with the highest Continuing_Approvals rate in descending order. (Top 20)
+scala> spark.sql("select Fiscal_Year, Employer, sum(CAST(REPLACE(Continuing_Approvals,',','') AS INT)) as Continuing_Approvals from H1B2017FY_final group by 1,2 order by Continuing_Approvals DESC").show(false)
++-----------+----------------------------------+--------------------+
+|Fiscal_Year|Employer                          |Continuing_Approvals|
++-----------+----------------------------------+--------------------+
+|2017       |COGNIZANT TECH SOLNS US CORP      |26196               |
+|2017       |TATA CONSULTANCY SVCS LTD         |12695               |
+|2017       |INFOSYS LTD                       |12637               |
+|2017       |WIPRO LIMITED                     |5771                |
+|2017       |DELOITTE CONSULTING LLP           |5502                |
+|2017       |ACCENTURE LLP                     |4175                |
+|2017       |HCL AMERICA INC                   |3600                |
+|2017       |CAPGEMINI AMERICA INC             |3156                |
+|2017       |TECH MAHINDRA AMERICAS INC        |2728                |
+|2017       |ERNST & YOUNG US LLP              |2644                |
+|2017       |MICROSOFT CORPORATION             |2617                |
+|2017       |AMAZON CORPORATE LLC              |2542                |
+|2017       |IBM INDIA PRIVATE LIMITED         |2090                |
+|2017       |LARSEN & TOUBRO INFOTECH LIMITED  |1710                |
+|2017       |GOOGLE INC                        |1594                |
+|2017       |INTEL CORPORATION                 |1577                |
+|2017       |SYNTEL CONSULTING INC             |1530                |
+|2017       |APPLE INC                         |1402                |
+|2017       |JPMORGAN CHASE & CO               |1333                |
+|2017       |PRICEWATERHOUSECOOPERS ADVISORY SE|1246                |
++-----------+----------------------------------+--------------------+
+
+##Employer with the highest Continuing_Denials rate in descending order. (Top 20)
+scala> spark.sql("select Fiscal_Year, Employer, sum(CAST(REPLACE(Continuing_Denials,',','') AS INT)) as Continuing_Denials from H1B2017FY_final group by 1,2 order by Contin
+uing_Denials DESC").show(false)
++-----------+----------------------------------+------------------+
+|Fiscal_Year|Employer                          |Continuing_Denials|
++-----------+----------------------------------+------------------+
+|2017       |TATA CONSULTANCY SVCS LTD         |745               |
+|2017       |INFOSYS LTD                       |639               |
+|2017       |COGNIZANT TECH SOLNS US CORP      |633               |
+|2017       |DELOITTE CONSULTING LLP           |580               |
+|2017       |WIPRO LIMITED                     |281               |
+|2017       |ERNST & YOUNG US LLP              |201               |
+|2017       |DELOITT& TOUCHE LLP               |180               |
+|2017       |CAPGEMINI AMERICA INC             |159               |
+|2017       |HCL AMERICA INC                   |133               |
+|2017       |TECH MAHINDRA AMERICAS INC        |125               |
+|2017       |LARSEN & TOUBRO INFOTECH LIMITED  |83                |
+|2017       |ACCENTURE LLP                     |80                |
+|2017       |KFORCE INC                        |75                |
+|2017       |PRICEWATERHOUSECOOPERS LLP        |70                |
+|2017       |SYNTEL CONSULTING INC             |70                |
+|2017       |MASTECH INC A MASTECH HOLDINGS INC|70                |
+|2017       |MICROSOFT CORPORATION             |64                |
+|2017       |ERP ANALYSTS INC                  |58                |
+|2017       |L&T TECHNOLOGY SERVICES LTD       |53                |
+|2017       |KSOFT SYSTEMS INC                 |47                |
++-----------+----------------------------------+------------------+
